@@ -8,7 +8,7 @@ import { GenerateAIResponse } from "./functions/ai_incident_response.ts";
  */
 export default Manifest({
   name: "generic-ai-function",
-  description: "Summarize an incident message",
+  description: "Craft a custom AI function",
   icon: "assets/default_new_app_icon.png",
   functions: [GenerateAIResponse],
   workflows: [],

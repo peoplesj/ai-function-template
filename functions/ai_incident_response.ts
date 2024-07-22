@@ -2,35 +2,36 @@ import { DefineFunction, Schema, SlackFunction } from "deno-slack-sdk/mod.ts";
 import OpenAI from "openai/mod.ts";
 
 export const GenerateAIResponse = DefineFunction({
-  callback_id: "ai_incident_response",
+  callback_id: "ai_response",
   title: "generate a summary of an incident",
   description: "save the incident summary and title as output variables",
   source_file: "functions/ai_incident_response.ts",
   input_parameters: {
     properties: {
-      ai_token: {
+      ai_key: {
         type: Schema.types.string,
-        description: "Channel ID, display option example: 'C123' ",
+        description: "Open AI API Key Example: SK-",
+        hint: "Create a new Open AI API key here: platform.openai.com/api-keys",
       },
       custom_prompt: {
-        type: Schema.types.string,
-        description: "Channel ID, display option example: 'C123' ",
+        type: Schema.slack.types.expanded_rich_text,
+        description: "AI prompt",
       },
       context: {
         type: Schema.types.string,
-        description: "Channel ID, display option example: 'C123' ",
+        description: "Add a variable as the context information",
       },
     },
-    required: [],
+    required: ["ai_key", "custom_prompt", "context"],
   },
   output_parameters: {
     properties: {
-      ai_incident_response: {
+      ai_response: {
         type: Schema.types.string,
-        description: "An ai summary of the incident",
+        description: "The output of the ai response",
       },
     },
-    required: ["ai_incident_response"],
+    required: ["ai_response"],
   },
 });
 
@@ -38,12 +39,12 @@ export default SlackFunction(
   GenerateAIResponse,
   async ({ inputs }) => {
     let AIResponse = "";
-    const context = inputs.context as string;
-    const customPrompt = inputs.custom_prompt as string;
+    const context = inputs.context;
+    const customPrompt = inputs.custom_prompt;
 
     try {
       const OPEN_AI = new OpenAI({
-        apiKey: inputs.ai_token,
+        apiKey: inputs.ai_key,
       });
 
       //  Make the API call to Open AI with the hard coded prompt and the original message.
@@ -51,12 +52,25 @@ export default SlackFunction(
         messages: [
           {
             "role": "system",
-            "content": customPrompt,
+            "content": customPrompt[0].elements[0].elements[0].text,
           },
           { "role": "user", "content": `${context}` },
         ],
         model: "gpt-3.5-turbo",
       });
+      console.log(
+        "customPrompT: ",
+        customPrompt[0].elements[0].elements[0].text,
+        "\n",
+        "context: ",
+        context,
+        "\n",
+        "inputs:",
+        inputs.context,
+        "\n",
+        "AI response:",
+        chatCompletion.choices[0].message.content,
+      );
       AIResponse = chatCompletion.choices[0].message.content ?? "null";
     } catch (error) {
       console.error("OPEN AI API CALL ERROR:", error);
@@ -65,7 +79,7 @@ export default SlackFunction(
     // Specifying these variables as output will allow them to be used by the next step in the workflow
     return {
       outputs: {
-        ai_incident_response: AIResponse,
+        ai_response: AIResponse,
       },
     };
   },
