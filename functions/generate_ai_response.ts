@@ -10,7 +10,7 @@ export const GenerateAIResponse = DefineFunction({
     properties: {
       ai_key: {
         type: Schema.types.string,
-        description: "Open AI API Key Example: SK-",
+        description: "Open AI API Key Example: SK-proj....",
         hint: "Create a new Open AI API key here: platform.openai.com/api-keys",
       },
       custom_prompt: {
@@ -38,42 +38,35 @@ export const GenerateAIResponse = DefineFunction({
 export default SlackFunction(
   GenerateAIResponse,
   async ({ inputs }) => {
-    let AIResponse = "";
     const context = inputs.context;
-    const customPrompt = inputs.custom_prompt;
+    let AIResponse = "";
+    let OPEN_AI;
+    let customPrompt = inputs.custom_prompt;
+    customPrompt = customPrompt[0].elements[0].elements[0].text; // extract the prompt text from the rich text object
 
     try {
-      const OPEN_AI = new OpenAI({
+      OPEN_AI = new OpenAI({
         apiKey: inputs.ai_key,
       });
+    } catch (error) {
+      console.error("OPEN AI API key error:", error);
+    }
 
-      //  Make the API call to Open AI with the hard coded prompt and the original message.
-      const chatCompletion = await OPEN_AI.chat.completions.create({
+    try {
+      //  Make the API call to Open AI with the
+      const chatCompletion = await OPEN_AI!.chat.completions.create({
         messages: [
           {
             "role": "system",
-            "content": customPrompt[0].elements[0].elements[0].text,
+            "content": customPrompt,
           },
           { "role": "user", "content": `${context}` },
         ],
         model: "gpt-3.5-turbo",
       });
-      console.log(
-        "customPrompT: ",
-        customPrompt[0].elements[0].elements[0].text,
-        "\n",
-        "context: ",
-        context,
-        "\n",
-        "inputs:",
-        inputs.context,
-        "\n",
-        "AI response:",
-        chatCompletion.choices[0].message.content,
-      );
-      AIResponse = chatCompletion.choices[0].message.content ?? "null";
+      AIResponse = chatCompletion.choices[0].message.content ?? "undefined";
     } catch (error) {
-      console.error("OPEN AI API CALL ERROR:", error);
+      console.error("Error with OPEN_AI!.chat.completions.create: ", error);
     }
 
     // Specifying these variables as output will allow them to be used by the next step in the workflow

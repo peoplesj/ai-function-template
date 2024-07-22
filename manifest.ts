@@ -1,5 +1,5 @@
 import { Manifest } from "deno-slack-sdk/mod.ts";
-import { GenerateAIResponse } from "./functions/ai_incident_response.ts";
+import { GenerateAIResponse } from "./functions/generate_ai_response.ts";
 
 /**
  * The app manifest contains the app's configuration. This
