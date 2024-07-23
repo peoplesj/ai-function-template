@@ -3,26 +3,21 @@ import OpenAI from "openai/mod.ts";
 
 export const GenerateAIResponse = DefineFunction({
   callback_id: "ai_response",
-  title: "generate a summary of an incident",
-  description: "save the incident summary and title as output variables",
-  source_file: "functions/ai_incident_response.ts",
+  title: "generate an AI response to the context data.",
+  description: "save the AI response as an output variable",
+  source_file: "functions/generate_ai_response.ts",
   input_parameters: {
     properties: {
-      ai_key: {
+      context: {
         type: Schema.types.string,
-        description: "Open AI API Key Example: SK-proj....",
-        hint: "Create a new Open AI API key here: platform.openai.com/api-keys",
+        description: "Add a variable as the context information",
       },
       custom_prompt: {
         type: Schema.slack.types.expanded_rich_text,
         description: "AI prompt",
       },
-      context: {
-        type: Schema.types.string,
-        description: "Add a variable as the context information",
-      },
     },
-    required: ["ai_key", "custom_prompt", "context"],
+    required: ["context", "custom_prompt"],
   },
   output_parameters: {
     properties: {
@@ -37,7 +32,7 @@ export const GenerateAIResponse = DefineFunction({
 
 export default SlackFunction(
   GenerateAIResponse,
-  async ({ inputs }) => {
+  async ({ inputs, env }) => {
     const context = inputs.context;
     let AIResponse = "";
     let OPEN_AI;
@@ -46,14 +41,14 @@ export default SlackFunction(
 
     try {
       OPEN_AI = new OpenAI({
-        apiKey: inputs.ai_key,
+        apiKey: env.OPEN_AI_KEY,
       });
     } catch (error) {
       console.error("OPEN AI API key error:", error);
     }
 
     try {
-      //  Make the API call to Open AI with the
+      //  Make the API call to Open AI with the user provided context
       const chatCompletion = await OPEN_AI!.chat.completions.create({
         messages: [
           {
@@ -65,6 +60,7 @@ export default SlackFunction(
         model: "gpt-3.5-turbo",
       });
       AIResponse = chatCompletion.choices[0].message.content ?? "undefined";
+      console.log("Successful AI response", AIResponse);
     } catch (error) {
       console.error("Error with OPEN_AI!.chat.completions.create: ", error);
     }
