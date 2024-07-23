@@ -9,6 +9,6 @@ https://github.com/peoplesj/ai-summarize-function/assets/105441105/806a1021-84ca
 ### Modify the function
 Once the Slack CLI is installed and authorized within a Slack Workspace. Clone this repo to your local system using the Slack CLI command
 ```
-slack create ai-summary-function --template peoplesj/ai-incident-summary-complete
+slack create --template peoplesj/ai-function-template
 ```
 
