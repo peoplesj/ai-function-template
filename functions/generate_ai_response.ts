@@ -33,9 +33,9 @@ export const GenerateAIResponse = DefineFunction({
 export default SlackFunction(
   GenerateAIResponse,
   async ({ inputs, env }) => {
-    const context = inputs.context;
     let AIResponse = "";
     let OPEN_AI;
+    const context = inputs.context;
     let customPrompt = inputs.custom_prompt;
     customPrompt = customPrompt[0].elements[0].elements[0].text; // extract the prompt text from the rich text object
 
@@ -55,7 +55,7 @@ export default SlackFunction(
             "role": "system",
             "content": customPrompt,
           },
-          { "role": "user", "content": `${context}` },
+          { "role": "user", "content": context },
         ],
         model: "gpt-3.5-turbo",
       });
@@ -64,7 +64,7 @@ export default SlackFunction(
     } catch (error) {
       console.error("Error with OPEN_AI!.chat.completions.create: ", error);
     }
-
+    
     // Specifying these variables as output will allow them to be used by the next step in the workflow
     return {
       outputs: {
