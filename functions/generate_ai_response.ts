@@ -41,6 +41,7 @@ export default SlackFunction(
 
     try {
       OPEN_AI = new OpenAI({
+        // apiKey: env.OPEN_AI_KEY,
         apiKey: env.OPEN_AI_KEY,
       });
     } catch (error) {
@@ -64,7 +65,7 @@ export default SlackFunction(
     } catch (error) {
       console.error("Error with OPEN_AI!.chat.completions.create: ", error);
     }
-    
+
     // Specifying these variables as output will allow them to be used by the next step in the workflow
     return {
       outputs: {
