@@ -41,7 +41,6 @@ export default SlackFunction(
 
     try {
       OPEN_AI = new OpenAI({
-        // apiKey: env.OPEN_AI_KEY,
         apiKey: env.OPEN_AI_KEY,
       });
     } catch (error) {
